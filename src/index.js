@@ -1,4 +1,5 @@
 import './css/styles.css';
+import { fetchCountries } from './js/fetchCountries';
 import _ from 'lodash';
 import { Notify } from 'notiflix';
 
@@ -8,23 +9,15 @@ let input = document.querySelector('#search-box');
 const countryList = document.querySelector('.country-list');
 const countryInfo = document.querySelector('.country-info');
 
-const searchFilter = {
-  fields: ['name', 'capital', 'population', 'flags', 'languages'],
-};
-
 input.addEventListener(
   'input',
   _.debounce(e => {
-    fetchJsonResponse(
-      `https://restcountries.com/v2/name/${e.target.value.trim()}?fields=${searchFilter[
-        'fields'
-      ].join()}`
-    ).then(response => {
+    fetchCountries(e.target.value.trim()).then(response => {
       if (response.length > 10) {
         Notify.info(
           'To many matches found. Please enter a more specific name.'
         );
-      } else if (response.length < 10 && response.length > 1) {
+      } else if (response.length <= 10 && response.length > 1) {
         htmlListInjection(response);
       } else if (response.length === 1) {
         countryList.innerHTML = '';
@@ -37,12 +30,6 @@ input.addEventListener(
     });
   }, DEBOUNCE_DELAY)
 );
-
-function fetchJsonResponse(url) {
-  return fetch(url)
-    .then(response => response.json())
-    .catch(error => console.log('Error: ', error));
-}
 
 function htmlListInjection(countriesArray) {
   countryList.innerHTML = '';
